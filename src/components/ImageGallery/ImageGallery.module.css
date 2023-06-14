@@ -1,0 +1,10 @@
+.list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  list-style: none;
+  margin-left: -40px;
+}
+
+img {
+  border-radius: 10px;
+}
