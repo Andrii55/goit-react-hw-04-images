@@ -35,7 +35,7 @@ export class App extends Component {
   };
 
   openModal = largeImageURL => {
-    console.log(largeImageURL);
+    // console.log(largeImageURL);
     this.setState({ largeImageURL });
   };
 
