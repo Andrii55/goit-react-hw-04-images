@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { Section } from './Section/Section';
 import { getImages } from 'API/API';
@@ -6,56 +6,49 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
 
-export class App extends Component {
-  state = {
-    query: '',
-    page: 1,
-    images: [],
-    showBtn: false,
-    largeImageURL: '',
-  };
-  componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
-    if (prevState.query !== query || prevState.page !== page) {
-      getImages(query, page).then(({ hits, totalHits }) => {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...hits],
-          showBtn: page < Math.ceil(totalHits / 12),
-        }));
-      });
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [showBtn, setshowBtn] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+
+  useEffect(() => {
+    if (!query) {
+      return;
     }
-  }
+    getImages(query, page).then(({ hits, totalHits }) => {
+      setImages(prevState => [...prevState, ...hits]);
+      setshowBtn(page < Math.ceil(totalHits / 12));
+    });
+  }, [query, page]);
 
-  handelClick = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const handelClick = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  handleSubmit = query => {
-    this.setState({ query, page: 1, images: [] });
+  const handleSubmit = query => {
+    setQuery(query);
+    setPage(1);
+    setImages([]);
   };
 
-  openModal = largeImageURL => {
-    // console.log(largeImageURL);
-    this.setState({ largeImageURL });
+  const openModal = largeImageURL => {
+    setLargeImageURL(largeImageURL);
   };
 
-  render() {
-    return (
-      <>
-        <Section>
-          <Searchbar onSubmit={this.handleSubmit} />
-        </Section>
-        <Section>
-          <ImageGallery openModal={this.openModal} images={this.state.images} />
-          {this.state.showBtn && <Button handelClick={this.handelClick} />}
-        </Section>
-        {this.state.largeImageURL && (
-          <Modal
-            largeImageURL={this.state.largeImageURL}
-            onClose={this.openModal}
-          />
-        )}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <Section>
+        <Searchbar handleOnSubmit={handleSubmit} />
+      </Section>
+      <Section>
+        <ImageGallery openModal={openModal} images={images} />
+        {showBtn && <Button handelClick={handelClick} />}
+      </Section>
+      {largeImageURL && (
+        <Modal largeImageURL={largeImageURL} onClose={openModal} />
+      )}
+    </>
+  );
+};
